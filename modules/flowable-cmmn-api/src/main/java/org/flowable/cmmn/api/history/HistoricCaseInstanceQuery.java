@@ -231,6 +231,11 @@ public interface HistoricCaseInstanceQuery extends Query<HistoricCaseInstanceQue
      * Only select historic case instances that are started by the provided user identifier.
      */
     HistoricCaseInstanceQuery startedBy(String userId);
+
+    /**
+     * Only select historic case instances that are ended by the provided user identifier.
+     */
+    HistoricCaseInstanceQuery finishedBy(String userId);
     
     /**
      * Only select historic case instances that have a state that is equal to the provided value.
@@ -256,6 +261,11 @@ public interface HistoricCaseInstanceQuery extends Query<HistoricCaseInstanceQue
      * Only select historic case instances that have the provided callback identifier.
      */
     HistoricCaseInstanceQuery caseInstanceCallbackId(String callbackId);
+
+    /**
+     * Only select historic case instances that have the provided callback identifiers.
+     */
+    HistoricCaseInstanceQuery caseInstanceCallbackIds(Set<String> callbackId);
     
     /**
      * Only select historic case instances that have the provided callback type.

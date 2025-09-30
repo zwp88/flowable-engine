@@ -68,10 +68,13 @@ public class HistoricProcessInstanceQueryRequest extends PaginateRequest {
     private Date startedAfter;
     private Date startedBefore;
     private String startedBy;
+    private String finishedBy;
+    private String state;
     private Boolean includeProcessVariables;
     private Collection<String> includeProcessVariablesNames;
     private List<QueryVariable> variables;
     private String callbackId;
+    private Set<String> callbackIds;
     private String callbackType;
     private String parentCaseInstanceId;
     private Boolean withoutCallbackId;
@@ -394,6 +397,22 @@ public class HistoricProcessInstanceQueryRequest extends PaginateRequest {
         this.startedBy = startedBy;
     }
 
+    public String getFinishedBy() {
+        return finishedBy;
+    }
+
+    public void setFinishedBy(String finishedBy) {
+        this.finishedBy = finishedBy;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
     public Boolean getIncludeProcessVariables() {
         return includeProcessVariables;
     }
@@ -497,5 +516,13 @@ public class HistoricProcessInstanceQueryRequest extends PaginateRequest {
 
     public void setParentScopeId(String parentScopeId) {
         this.parentScopeId = parentScopeId;
+    }
+
+    public Set<String> getCallbackIds() {
+        return callbackIds;
+    }
+
+    public void setCallbackIds(Set<String> callbackIds) {
+        this.callbackIds = callbackIds;
     }
 }

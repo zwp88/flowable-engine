@@ -51,6 +51,8 @@ public interface CmmnHistoryManager {
 
     void recordIdentityLinkCreated(IdentityLinkEntity identityLink);
 
+    void recordIdentityLinkCreated(CaseInstanceEntity caseInstance, IdentityLinkEntity identityLink);
+
     void recordIdentityLinkDeleted(IdentityLinkEntity identityLink);
     
     void recordEntityLinkCreated(EntityLinkEntity entityLink);

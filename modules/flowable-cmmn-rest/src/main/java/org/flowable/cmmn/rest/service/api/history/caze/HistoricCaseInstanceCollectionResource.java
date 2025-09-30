@@ -13,8 +13,11 @@
 
 package org.flowable.cmmn.rest.service.api.history.caze;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.flowable.cmmn.rest.service.api.BulkDeleteInstancesRestActionRequest;
 import org.flowable.common.engine.api.FlowableIllegalArgumentException;
 import org.flowable.common.rest.api.DataResponse;
@@ -40,12 +43,13 @@ import io.swagger.annotations.Authorization;
  * @author Tijs Rademakers
  */
 @RestController
-@Api(tags = { "History Case" }, description = "Manage History Case Instances", authorizations = { @Authorization(value = "basicAuth") })
+@Api(tags = { "History Case" }, authorizations = { @Authorization(value = "basicAuth") })
 public class HistoricCaseInstanceCollectionResource extends HistoricCaseInstanceBaseResource {
 
     @ApiOperation(value = "List of historic case instances", tags = { "History Case" }, nickname = "listHistoricCaseInstances")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "caseInstanceId", dataType = "string", value = "An id of the historic case instance.", paramType = "query"),
+            @ApiImplicitParam(name = "caseInstanceIds", dataType = "string", value = "Only return historic case instances with the given comma-separated ids.", paramType = "query"),
             @ApiImplicitParam(name = "caseDefinitionKey", dataType = "string", value = "The case definition key of the historic case instance.", paramType = "query"),
             @ApiImplicitParam(name = "caseDefinitionKeyLike", dataType = "string", value = "Only return historic case instances like the given case definition key.", paramType = "query"),
             @ApiImplicitParam(name = "caseDefinitionKeyLikeIgnoreCase", dataType = "string", value = "Only return historic case instances like the given case definition key, ignoring case.", paramType = "query"),
@@ -103,6 +107,10 @@ public class HistoricCaseInstanceCollectionResource extends HistoricCaseInstance
 
         if (allRequestParams.get("caseInstanceId") != null) {
             queryRequest.setCaseInstanceId(allRequestParams.get("caseInstanceId"));
+        }
+
+        if (allRequestParams.get("caseInstanceIds") != null) {
+            queryRequest.setCaseInstanceIds(RequestUtil.parseToSet(allRequestParams.get("caseInstanceIds")));
         }
 
         if (allRequestParams.get("caseDefinitionKey") != null) {
@@ -200,7 +208,11 @@ public class HistoricCaseInstanceCollectionResource extends HistoricCaseInstance
         if (allRequestParams.get("callbackId") != null) {
             queryRequest.setCaseInstanceCallbackId(allRequestParams.get("callbackId"));
         }
-        
+
+        if (allRequestParams.containsKey("callbackIds")) {
+            queryRequest.setCaseInstanceCallbackIds(RequestUtil.parseToSet(allRequestParams.get("callbackIds")));
+        }
+
         if (allRequestParams.get("callbackType") != null) {
             queryRequest.setCaseInstanceCallbackType(allRequestParams.get("callbackType"));
         }
@@ -208,7 +220,7 @@ public class HistoricCaseInstanceCollectionResource extends HistoricCaseInstance
         if (allRequestParams.containsKey("parentCaseInstanceId")) {
             queryRequest.setParentCaseInstanceId(allRequestParams.get("parentCaseInstanceId"));
         }
-        
+
         if (allRequestParams.get("referenceId") != null) {
             queryRequest.setCaseInstanceReferenceId(allRequestParams.get("referenceId"));
         }

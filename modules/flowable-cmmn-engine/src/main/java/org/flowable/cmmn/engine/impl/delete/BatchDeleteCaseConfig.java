@@ -142,11 +142,9 @@ public class BatchDeleteCaseConfig {
     }
 
     protected static void populateQuery(JsonNode queryNode, HistoricCaseInstanceQuery query, CmmnEngineConfiguration engineConfiguration) {
-        Iterator<Map.Entry<String, JsonNode>> fieldIterator = queryNode.fields();
-        while (fieldIterator.hasNext()) {
-            Map.Entry<String, JsonNode> field = fieldIterator.next();
-            String property = field.getKey();
-            JsonNode value = field.getValue();
+        for (Map.Entry<String, JsonNode> propertyEntry : queryNode.properties()) {
+            String property = propertyEntry.getKey();
+            JsonNode value = propertyEntry.getValue();
             switch (property) {
                 case "caseDefinitionId":
                     query.caseDefinitionId(value.textValue());
@@ -230,6 +228,9 @@ public class BatchDeleteCaseConfig {
                 case "startedBy":
                     query.startedBy(value.textValue());
                     break;
+                case "finishedBy":
+                    query.finishedBy(value.textValue());
+                    break;
                 case "lastReactivatedBefore":
                     query.lastReactivatedBefore(AsyncHistoryDateUtil.parseDate(value.textValue()));
                     break;
@@ -240,6 +241,8 @@ public class BatchDeleteCaseConfig {
                     break;
                 case "callbackId":
                     query.caseInstanceCallbackId(value.textValue());
+                case "callbackIds":
+                    query.caseInstanceCallbackIds(asStringSet(value));
                     break;
                 case "callbackType":
                     query.caseInstanceCallbackType(value.textValue());

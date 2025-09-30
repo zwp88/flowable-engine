@@ -190,6 +190,12 @@ public class HistoricProcessInstanceBaseResource {
         if (queryRequest.getStartedBy() != null) {
             query.startedBy(queryRequest.getStartedBy());
         }
+        if (queryRequest.getFinishedBy() != null) {
+            query.finishedBy(queryRequest.getFinishedBy());
+        }
+        if (queryRequest.getState() != null) {
+            query.state(queryRequest.getState());
+        }
         if (queryRequest.getFinished() != null) {
             if (queryRequest.getFinished()) {
                 query.finished();
@@ -212,6 +218,11 @@ public class HistoricProcessInstanceBaseResource {
         if (queryRequest.getCallbackId() != null) {
             query.processInstanceCallbackId(queryRequest.getCallbackId());
         }
+
+        if (queryRequest.getCallbackIds() != null && !queryRequest.getCallbackIds().isEmpty()) {
+            query.processInstanceCallbackIds(queryRequest.getCallbackIds());
+        }
+
         if (queryRequest.getCallbackType() != null) {
             query.processInstanceCallbackType(queryRequest.getCallbackType());
         }

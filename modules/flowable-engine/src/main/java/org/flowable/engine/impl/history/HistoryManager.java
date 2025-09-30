@@ -56,7 +56,7 @@ public interface HistoryManager {
     /**
      * Record a process-instance ended. Updates the historic process instance if activity history is enabled.
      */
-    void recordProcessInstanceEnd(ExecutionEntity processInstance, String deleteReason, String activityId, Date endTime);
+    void recordProcessInstanceEnd(ExecutionEntity processInstance, String state, String deleteReason, String activityId, Date endTime);
 
     /**
      * Record a process-instance started and record start-event if activity history is enabled.
@@ -197,6 +197,11 @@ public interface HistoryManager {
      * Record the creation of a new {@link IdentityLink}, if audit history is enabled.
      */
     void recordIdentityLinkCreated(IdentityLinkEntity identityLink);
+
+    /**
+     * Record the creation of a new {@link IdentityLink} for the processInstance, if audit history is enabled.
+     */
+    void recordIdentityLinkCreated(ExecutionEntity processInstance, IdentityLinkEntity identityLinkEntity);
 
     /**
      * Record the deletion of a {@link IdentityLink}, if audit history is enabled

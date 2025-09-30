@@ -308,6 +308,23 @@ public class ProcessInstanceCollectionResourceTest extends BaseSpringRestTestCas
     }
 
     /**
+     * Test getting a list of process instance by callback id
+     */
+    @Test
+    @Deployment(resources = { "org/flowable/rest/service/api/runtime/ProcessInstanceResourceTest.process-one.bpmn20.xml" })
+    public void testGetProcessInstancesByCallbackId() throws Exception {
+        ProcessInstance processInstance = runtimeService.createProcessInstanceBuilder().callbackId("callBackId1").processDefinitionKey("processOne").start();
+        String id = processInstance.getId();
+        // Process instance id
+        String url = RestUrls.createRelativeResourceUrl(RestUrls.URL_PROCESS_INSTANCE_COLLECTION) + "?callbackId=callBackId1";
+        assertResultsPresentInDataResponse(url, id);
+
+        url = RestUrls.createRelativeResourceUrl(RestUrls.URL_PROCESS_INSTANCE_COLLECTION) + "?callbackIds=someOtherId,callBackId1";
+        assertResultsPresentInDataResponse(url, id);
+
+    }
+
+    /**
      * Test getting a list of sorted process instance
      */
     @Test
@@ -591,7 +608,7 @@ public class ProcessInstanceCollectionResourceTest extends BaseSpringRestTestCas
                         entry("longVariable", 4567890L),
                         entry("doubleVariable", 123.456),
                         entry("booleanVariable", Boolean.TRUE),
-                        entry("dateVariable", dateFormat.parse(isoString))
+                        entry("dateVariable", getDateFromISOString(isoString))
                 );
     }
 

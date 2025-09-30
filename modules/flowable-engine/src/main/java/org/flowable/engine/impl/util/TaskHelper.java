@@ -198,8 +198,7 @@ public class TaskHelper {
     protected static void storeTaskCompleter(TaskEntity taskEntity, ExecutionEntity execution, ProcessEngineConfigurationImpl processEngineConfiguration) {
         if (taskEntity.getProcessDefinitionId() != null) {
             FlowElement flowElement = execution.getCurrentFlowElement();
-            if (flowElement instanceof UserTask) {
-                UserTask userTask = (UserTask) flowElement;
+            if (flowElement instanceof UserTask userTask) {
                 String taskCompleterVariableName = userTask.getTaskCompleterVariableName();
                 if (StringUtils.isNotEmpty(taskCompleterVariableName)) {
                     ExpressionManager expressionManager = processEngineConfiguration.getExpressionManager();
@@ -293,6 +292,9 @@ public class TaskHelper {
     }
 
     public static void addAssigneeIdentityLinks(TaskEntity taskEntity) {
+        if (taskEntity.getAssignee() == null) {
+            return;
+        }
         ProcessEngineConfigurationImpl processEngineConfiguration = CommandContextUtil.getProcessEngineConfiguration();
         if (processEngineConfiguration.getIdentityLinkInterceptor() != null) {
             processEngineConfiguration.getIdentityLinkInterceptor().handleAddAssigneeIdentityLinkToTask(taskEntity, taskEntity.getAssignee());

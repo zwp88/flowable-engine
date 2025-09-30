@@ -71,6 +71,8 @@ public class HistoricProcessInstanceQueryImpl extends AbstractVariableQueryImpl<
     protected boolean deleted;
     protected boolean notDeleted;
     protected String startedBy;
+    protected String finishedBy;
+    protected String state;
     protected String superProcessInstanceId;
     protected boolean excludeSubprocesses;
     protected List<String> processDefinitionKeyIn;
@@ -112,6 +114,7 @@ public class HistoricProcessInstanceQueryImpl extends AbstractVariableQueryImpl<
     protected String rootScopeId;
     protected String parentScopeId;
     protected String callbackId;
+    protected Set<String> callbackIds;
     protected String callbackType;
     protected String parentCaseInstanceId;
     protected boolean withoutCallbackId;
@@ -446,6 +449,26 @@ public class HistoricProcessInstanceQueryImpl extends AbstractVariableQueryImpl<
     }
 
     @Override
+    public HistoricProcessInstanceQuery finishedBy(String finishedBy) {
+        if (inOrStatement) {
+            this.currentOrQueryObject.finishedBy = finishedBy;
+        } else {
+            this.finishedBy = finishedBy;
+        }
+        return this;
+    }
+
+    @Override
+    public HistoricProcessInstanceQuery state(String state) {
+        if (inOrStatement) {
+            this.currentOrQueryObject.state = state;
+        } else {
+            this.state = state;
+        }
+        return this;
+    }
+
+    @Override
     public HistoricProcessInstanceQuery processDefinitionKeyNotIn(List<String> processDefinitionKeys) {
         if (inOrStatement) {
             this.currentOrQueryObject.processKeyNotIn = processDefinitionKeys;
@@ -706,6 +729,19 @@ public class HistoricProcessInstanceQueryImpl extends AbstractVariableQueryImpl<
             currentOrQueryObject.callbackId = callbackId;
         } else {
             this.callbackId = callbackId;
+        }
+        return this;
+    }
+
+    @Override
+    public HistoricProcessInstanceQuery processInstanceCallbackIds(Set<String> callbackIds) {
+        if (callbackIds == null || callbackIds.isEmpty()) {
+            throw new FlowableIllegalArgumentException("callbackIds is null or empty");
+        }
+        if (inOrStatement) {
+            this.currentOrQueryObject.callbackIds = callbackIds;
+        } else {
+            this.callbackIds = callbackIds;
         }
         return this;
     }
@@ -1342,6 +1378,14 @@ public class HistoricProcessInstanceQueryImpl extends AbstractVariableQueryImpl<
         return startedBy;
     }
 
+    public String getFinishedBy() {
+        return finishedBy;
+    }
+
+    public String getState() {
+        return state;
+    }
+
     public String getSuperProcessInstanceId() {
         return superProcessInstanceId;
     }
@@ -1452,6 +1496,10 @@ public class HistoricProcessInstanceQueryImpl extends AbstractVariableQueryImpl<
     
     public String getCallbackId() {
         return callbackId;
+    }
+
+    public Set<String> getCallbackIds() {
+        return callbackIds;
     }
 
     public String getCallbackType() {

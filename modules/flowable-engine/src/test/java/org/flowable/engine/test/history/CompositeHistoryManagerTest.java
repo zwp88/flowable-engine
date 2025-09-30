@@ -140,10 +140,10 @@ class CompositeHistoryManagerTest {
     void recordProcessInstanceEnd() {
         ExecutionEntity instance = new ExecutionEntityImpl();
         Date endTime = Date.from(Instant.now().plusSeconds(1));
-        compositeHistoryManager.recordProcessInstanceEnd(instance, "reason", "activity-id", endTime);
+        compositeHistoryManager.recordProcessInstanceEnd(instance, "state", "reason", "activity-id", endTime);
 
-        verify(historyManager1).recordProcessInstanceEnd(same(instance), eq("reason"), eq("activity-id"), eq(endTime));
-        verify(historyManager2).recordProcessInstanceEnd(same(instance), eq("reason"), eq("activity-id"), eq(endTime));
+        verify(historyManager1).recordProcessInstanceEnd(same(instance), eq("state"), eq("reason"), eq("activity-id"), eq(endTime));
+        verify(historyManager2).recordProcessInstanceEnd(same(instance), eq("state"), eq("reason"), eq("activity-id"), eq(endTime));
     }
 
     @Test
@@ -386,6 +386,16 @@ class CompositeHistoryManagerTest {
 
         verify(historyManager1).recordIdentityLinkCreated(same(identityLink));
         verify(historyManager2).recordIdentityLinkCreated(same(identityLink));
+    }
+
+    @Test
+    void recordIdentityLinkCreatedWithProcessInstance() {
+        ExecutionEntity processInstance = new ExecutionEntityImpl();
+        IdentityLinkEntity identityLink = new IdentityLinkEntityImpl();
+        compositeHistoryManager.recordIdentityLinkCreated(processInstance, identityLink);
+
+        verify(historyManager1).recordIdentityLinkCreated(same(processInstance), same(identityLink));
+        verify(historyManager2).recordIdentityLinkCreated(same(processInstance), same(identityLink));
     }
 
     @Test

@@ -219,35 +219,35 @@ public class HistoricTaskInstanceQueryResourceTest extends BaseSpringRestTestCas
         assertResultsPresentInPostDataResponse(url, requestNode, 1, task.getId());
 
         requestNode = objectMapper.createObjectNode();
-        requestNode.put("dueDateAfter", longDateFormat.format(new GregorianCalendar(2015, 0, 1).getTime()));
+        requestNode.put("dueDateAfter", getISODateString(new GregorianCalendar(2015, 0, 1).getTime()));
         assertResultsPresentInPostDataResponse(url, requestNode, 1, task.getId());
 
         requestNode = objectMapper.createObjectNode();
-        requestNode.put("dueDateAfter", longDateFormat.format(new GregorianCalendar(2018, 4, 1).getTime()));
+        requestNode.put("dueDateAfter", getISODateString(new GregorianCalendar(2018, 4, 1).getTime()));
         assertResultsPresentInPostDataResponse(url, requestNode, 0);
 
         requestNode = objectMapper.createObjectNode();
-        requestNode.put("dueDateBefore", longDateFormat.format(new GregorianCalendar(2015, 0, 1).getTime()));
+        requestNode.put("dueDateBefore", getISODateString(new GregorianCalendar(2015, 0, 1).getTime()));
         assertResultsPresentInPostDataResponse(url, requestNode, 0);
 
         requestNode = objectMapper.createObjectNode();
-        requestNode.put("dueDateBefore", longDateFormat.format(new GregorianCalendar(2018, 4, 1).getTime()));
+        requestNode.put("dueDateBefore", getISODateString(new GregorianCalendar(2018, 4, 1).getTime()));
         assertResultsPresentInPostDataResponse(url, requestNode, 1, task.getId());
 
         requestNode = objectMapper.createObjectNode();
-        requestNode.put("taskCompletedAfter", longDateFormat.format(new GregorianCalendar(2015, 0, 1).getTime()));
+        requestNode.put("taskCompletedAfter", getISODateString(new GregorianCalendar(2015, 0, 1).getTime()));
         assertResultsPresentInPostDataResponse(url, requestNode, 1, finishedTaskCase1.getId());
 
         requestNode = objectMapper.createObjectNode();
-        requestNode.put("taskCompletedAfter", longDateFormat.format(new GregorianCalendar(2018, 4, 1).getTime()));
+        requestNode.put("taskCompletedAfter", getISODateString(new GregorianCalendar(2018, 4, 1).getTime()));
         assertResultsPresentInPostDataResponse(url, requestNode, 0);
 
         requestNode = objectMapper.createObjectNode();
-        requestNode.put("taskCompletedBefore", longDateFormat.format(new GregorianCalendar(2015, 0, 1).getTime()));
+        requestNode.put("taskCompletedBefore", getISODateString(new GregorianCalendar(2015, 0, 1).getTime()));
         assertResultsPresentInPostDataResponse(url, requestNode, 0);
 
         requestNode = objectMapper.createObjectNode();
-        requestNode.put("taskCompletedAfter", longDateFormat.format(new GregorianCalendar(2015, 3, 1).getTime()));
+        requestNode.put("taskCompletedAfter", getISODateString(new GregorianCalendar(2015, 3, 1).getTime()));
         assertResultsPresentInPostDataResponse(url, requestNode, 1, finishedTaskCase1.getId());
 
         requestNode = objectMapper.createObjectNode();
@@ -261,6 +261,14 @@ public class HistoricTaskInstanceQueryResourceTest extends BaseSpringRestTestCas
         requestNode = objectMapper.createObjectNode();
         requestNode.put("planItemInstanceId", finishedTaskCase1.getSubScopeId());
         assertResultsPresentInPostDataResponse(url, requestNode, 1, finishedTaskCase1.getId());
+
+        requestNode = objectMapper.createObjectNode();
+        requestNode.put("scopeId", caseInstance.getId());
+        assertResultsPresentInPostDataResponse(url, requestNode, 2, task.getId(), finishedTaskCase1.getId());
+
+        requestNode = objectMapper.createObjectNode();
+        requestNode.putArray("scopeIds").add("someId").add(caseInstance.getId());
+        assertResultsPresentInPostDataResponse(url, requestNode, 2, task.getId(), finishedTaskCase1.getId());
     }
 
     @Test

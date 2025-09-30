@@ -218,10 +218,12 @@ public class DeleteHistoricCaseInstancesUsingBatchesCmd implements Command<Strin
         putIfNotNull(queryNode, "finishedBefore", query.getFinishedBefore());
         putIfNotNull(queryNode, "finishedAfter", query.getFinishedAfter());
         putIfNotNull(queryNode, "startedBy", query.getStartedBy());
+        putIfNotNull(queryNode, "finishedBy", query.getFinishedBy());
         putIfNotNull(queryNode, "lastReactivatedBefore", query.getLastReactivatedBefore());
         putIfNotNull(queryNode, "lastReactivatedAfter", query.getLastReactivatedAfter());
         putIfNotNull(queryNode, "lastReactivatedBy", query.getLastReactivatedBy());
         putIfNotNull(queryNode, "callbackId", query.getCallbackId());
+        putIfNotNullOrEmpty(queryNode, "callbackIds", query.getCallbackIds());
         putIfNotNull(queryNode, "callbackType", query.getCallbackType());
         putIfTrue(queryNode, "withoutCallbackId", query.isWithoutCallbackId());
         putIfNotNull(queryNode, "referenceId", query.getReferenceId());

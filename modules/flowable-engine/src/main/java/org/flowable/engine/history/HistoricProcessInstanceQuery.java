@@ -462,6 +462,16 @@ public interface HistoricProcessInstanceQuery extends Query<HistoricProcessInsta
      */
     HistoricProcessInstanceQuery startedBy(String userId);
 
+    /**
+     * Only select historic process instances that are ended by the provided user identifier.
+     */
+    HistoricProcessInstanceQuery finishedBy(String userId);
+
+    /**
+     * Only select historic process instances that have a state that is equal to the provided value.
+     */
+    HistoricProcessInstanceQuery state(String state);
+
     /** Only select process instances that have the given tenant id. */
     HistoricProcessInstanceQuery processInstanceTenantId(String tenantId);
 
@@ -560,10 +570,15 @@ public interface HistoricProcessInstanceQuery extends Query<HistoricProcessInsta
     HistoricProcessInstanceQuery processInstanceNameLikeIgnoreCase(String nameLikeIgnoreCase);
     
     /**
-     * Only select process instances with the given callback identifier. 
+     * Only select process instances with the given callback identifier.
      */
     HistoricProcessInstanceQuery processInstanceCallbackId(String callbackId);
-    
+
+    /**
+     * Only select process instances with the given callback identifiers.
+     */
+    HistoricProcessInstanceQuery processInstanceCallbackIds(Set<String> callbackIds);
+
     /**
      * Only select process instances with the given callback type. 
      */

@@ -35,7 +35,6 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 
 import net.javacrumbs.jsonunit.core.Option;
 
@@ -68,6 +67,20 @@ public class CaseInstanceQueryResourceTest extends BaseSpringRestTestCase {
         String url = CmmnRestUrls.createRelativeResourceUrl(CmmnRestUrls.URL_CASE_INSTANCE_QUERY);
 
         ObjectNode requestNode = objectMapper.createObjectNode();
+        requestNode.put("caseInstanceId", caseInstance.getId());
+        assertResultsPresentInPostDataResponse(url, requestNode, caseInstance.getId());
+
+        CaseInstance caseInstance2 = runtimeService.createCaseInstanceBuilder().caseDefinitionKey("oneHumanTaskCase").start();
+        CaseInstance caseInstance3 = runtimeService.createCaseInstanceBuilder().caseDefinitionKey("oneHumanTaskCase").start();
+
+        requestNode = objectMapper.createObjectNode();
+        requestNode.putArray("caseInstanceIds").add(caseInstance.getId()).add(caseInstance2.getId());
+        assertResultsPresentInPostDataResponse(url, requestNode, caseInstance.getId(), caseInstance2.getId());
+
+        runtimeService.terminateCaseInstance(caseInstance2.getId());
+        runtimeService.terminateCaseInstance(caseInstance3.getId());
+
+        requestNode = objectMapper.createObjectNode();
         requestNode.put("caseInstanceBusinessKey", "myBusinessKey");
         assertResultsPresentInPostDataResponse(url, requestNode, caseInstance.getId());
         
@@ -269,7 +282,7 @@ public class CaseInstanceQueryResourceTest extends BaseSpringRestTestCase {
                         + "    id: '" + caseInstance1.getId() + "',"
                         + "    caseDefinitionName: 'One Human Task Case',"
                         + "    caseDefinitionDescription: 'A human task case',"
-                        + "    startTime: " + new TextNode(getISODateStringWithTZ(caseInstance1.getStartTime())) + ","
+                        + "    startTime: '" + getISODateString(caseInstance1.getStartTime()) + "',"
                         + "    startUserId: 'queryCaseUser'"
                         + "  }"
                         + "]");
@@ -619,6 +632,70 @@ public class CaseInstanceQueryResourceTest extends BaseSpringRestTestCase {
                         + "  },"
                         + "  {"
                         + "    businessKey: 'businessKey1'"
+                        + "  }"
+                        + "]");
+
+    }
+
+    @CmmnDeployment(resources = {"org/flowable/cmmn/rest/service/api/repository/oneHumanTaskCase.cmmn"})
+    public void testQueryCaseInstancesByCaseInstanceIds() throws Exception {
+        CaseInstance caseInstance = runtimeService.createCaseInstanceBuilder().caseDefinitionKey("oneHumanTaskCase").start();
+        CaseInstance caseInstance2 = runtimeService.createCaseInstanceBuilder().caseDefinitionKey("oneHumanTaskCase").start();
+        runtimeService.createCaseInstanceBuilder().caseDefinitionKey("oneHumanTaskCase").start();
+
+        ObjectNode requestNode = objectMapper.createObjectNode();
+        ArrayNode itemArrayNode = requestNode.putArray("caseInstanceIds");
+        itemArrayNode.add(caseInstance.getId());
+        itemArrayNode.add(caseInstance2.getId());
+        itemArrayNode.add("someId");
+        String url = CmmnRestUrls.createRelativeResourceUrl(CmmnRestUrls.URL_CASE_INSTANCE_QUERY);
+        HttpPost httpPost = new HttpPost(SERVER_URL_PREFIX + url);
+        httpPost.setEntity(new StringEntity(requestNode.toString()));
+        CloseableHttpResponse response = executeRequest(httpPost, HttpStatus.SC_OK);
+
+        JsonNode rootNode = objectMapper.readTree(response.getEntity().getContent());
+        closeResponse(response);
+        JsonNode dataNode = rootNode.get("data");
+        assertThatJson(dataNode)
+                .when(Option.IGNORING_EXTRA_FIELDS)
+                .isEqualTo("["
+                        + "  {"
+                        + "    id: '" + caseInstance.getId() + "'"
+                        + "  },"
+                        + "  {"
+                        + "    id: '" + caseInstance2.getId() + "'"
+                        + "  }"
+                        + "]");
+
+    }
+
+    @CmmnDeployment(resources = {"org/flowable/cmmn/rest/service/api/repository/oneHumanTaskCase.cmmn"})
+    public void testQueryCaseInstancesByCaseInstanceCallbackIds() throws Exception {
+        CaseInstance caseInstance = runtimeService.createCaseInstanceBuilder().callbackId("callBackId1").caseDefinitionKey("oneHumanTaskCase").start();
+        CaseInstance caseInstance2 = runtimeService.createCaseInstanceBuilder().callbackId("callBackId2").caseDefinitionKey("oneHumanTaskCase").start();
+        runtimeService.createCaseInstanceBuilder().callbackId("callBackId3").caseDefinitionKey("oneHumanTaskCase").start();
+
+        ObjectNode requestNode = objectMapper.createObjectNode();
+        ArrayNode itemArrayNode = requestNode.putArray("caseInstanceCallbackIds");
+        itemArrayNode.add("callBackId1");
+        itemArrayNode.add("callBackId2");
+        itemArrayNode.add("someId");
+        String url = CmmnRestUrls.createRelativeResourceUrl(CmmnRestUrls.URL_CASE_INSTANCE_QUERY);
+        HttpPost httpPost = new HttpPost(SERVER_URL_PREFIX + url);
+        httpPost.setEntity(new StringEntity(requestNode.toString()));
+        CloseableHttpResponse response = executeRequest(httpPost, HttpStatus.SC_OK);
+
+        JsonNode rootNode = objectMapper.readTree(response.getEntity().getContent());
+        closeResponse(response);
+        JsonNode dataNode = rootNode.get("data");
+        assertThatJson(dataNode)
+                .when(Option.IGNORING_EXTRA_FIELDS)
+                .isEqualTo("["
+                        + "  {"
+                        + "    id: '" + caseInstance.getId() + "'"
+                        + "  },"
+                        + "  {"
+                        + "    id: '" + caseInstance2.getId() + "'"
                         + "  }"
                         + "]");
 

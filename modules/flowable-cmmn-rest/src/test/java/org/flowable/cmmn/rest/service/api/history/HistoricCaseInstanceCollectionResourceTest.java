@@ -76,6 +76,8 @@ public class HistoricCaseInstanceCollectionResourceTest extends BaseSpringRestTe
                 .name("myCaseInstanceName")
                 .businessKey("myBusinessKey")
                 .businessStatus("myBusinessStatus")
+                .callbackId("someCallbackId")
+                .callbackType("someCallbackType")
                 .variables(caseVariables).start();
         Task task = taskService.createTaskQuery().caseInstanceId(caseInstance.getId()).singleResult();
         taskService.complete(task.getId());
@@ -88,11 +90,18 @@ public class HistoricCaseInstanceCollectionResourceTest extends BaseSpringRestTe
                 .name("anotherCaseInstanceName")
                 .businessKey("anotherBusinessKey")
                 .businessStatus("anotherBusinessStatus")
+                .callbackId("someOtherCallbackId")
+                .callbackType("someOtherCallbackType")
                 .start();
         
         identityService.setAuthenticatedUserId(null);
 
         String url = CmmnRestUrls.createRelativeResourceUrl(CmmnRestUrls.URL_HISTORIC_CASE_INSTANCES);
+
+        assertResultsPresentInDataResponse(url + "?caseInstanceId=" + caseInstance.getId(), caseInstance.getId());
+
+        assertResultsPresentInDataResponse(url + "?caseInstanceIds=someId," + caseInstance.getId(), caseInstance.getId());
+        assertResultsPresentInDataResponse(url + "?caseInstanceIds=someId," + caseInstance.getId() + "," + caseInstance2.getId(), caseInstance.getId(), caseInstance2.getId());
 
         assertResultsPresentInDataResponse(url + "?finished=true", caseInstance.getId());
 
@@ -123,6 +132,10 @@ public class HistoricCaseInstanceCollectionResourceTest extends BaseSpringRestTe
         assertResultsPresentInDataResponse(url + "?businessStatus=anotherBusinessStatus", caseInstance2.getId());
         assertResultsPresentInDataResponse(url + "?businessStatus=none");
         
+        assertResultsPresentInDataResponse(url + "?callbackId=someCallbackId", caseInstance.getId());
+        assertResultsPresentInDataResponse(url + "?callbackIds=noneExistingId,someCallbackId,someOtherCallbackId", caseInstance.getId(),caseInstance2.getId());
+        assertResultsPresentInDataResponse(url + "?callbackType=someCallbackType", caseInstance.getId());
+
         assertResultsPresentInDataResponse(url + "?state=active", caseInstance2.getId());
         assertResultsPresentInDataResponse(url + "?state=none");
         
@@ -135,12 +148,12 @@ public class HistoricCaseInstanceCollectionResourceTest extends BaseSpringRestTe
         
         assertResultsPresentInDataResponse(url + "?startedBefore=" + getISODateString(futureCal.getTime()), caseInstance.getId(), caseInstance2.getId());
         assertResultsPresentInDataResponse(url + "?startedBefore=" + getIsoDateStringWithoutSeconds(futureCal.getTime()), caseInstance.getId(), caseInstance2.getId());
-        assertResultsPresentInDataResponse(url + "?startedBefore=" + getIsoDateStringWithMS(futureCal.getTime()), caseInstance.getId(), caseInstance2.getId());
+        assertResultsPresentInDataResponse(url + "?startedBefore=" + getISODateString(futureCal.getTime()), caseInstance.getId(), caseInstance2.getId());
         assertResultsPresentInDataResponse(url + "?startedBefore=" + getISODateString(historicCal.getTime()));
         
         assertResultsPresentInDataResponse(url + "?startedAfter=" + getISODateString(historicCal.getTime()), caseInstance.getId(), caseInstance2.getId());
         assertResultsPresentInDataResponse(url + "?startedAfter=" + getIsoDateStringWithoutSeconds(historicCal.getTime()), caseInstance.getId(), caseInstance2.getId());
-        assertResultsPresentInDataResponse(url + "?startedAfter=" + getIsoDateStringWithMS(historicCal.getTime()), caseInstance.getId(), caseInstance2.getId());
+        assertResultsPresentInDataResponse(url + "?startedAfter=" + getIsoDateStringWithoutMS(historicCal.getTime()), caseInstance.getId(), caseInstance2.getId());
 
         assertResultsPresentInDataResponse(url + "?startedAfter=" + getISODateString(futureCal.getTime()));
         
@@ -663,6 +676,23 @@ public class HistoricCaseInstanceCollectionResourceTest extends BaseSpringRestTe
                         + "    { id: '" + oneTaskCase2PlanItemInstance.getCaseInstanceId() + "' }"
                         + "  ]"
                         + "}");
+    }
+
+    @Test
+    @CmmnDeployment(resources = "org/flowable/cmmn/rest/service/api/runtime/oneTaskCase.cmmn")
+    public void testQueryByCaseInstanceIds() throws IOException {
+        CaseInstance caseInstance1 = runtimeService.createCaseInstanceBuilder().caseDefinitionKey("oneTaskCase").start();
+        CaseInstance caseInstance2 = runtimeService.createCaseInstanceBuilder().caseDefinitionKey("oneTaskCase").start();
+        CaseInstance caseInstance3 = runtimeService.createCaseInstanceBuilder().caseDefinitionKey("oneTaskCase").start();
+
+        String url = CmmnRestUrls.createRelativeResourceUrl(CmmnRestUrls.URL_HISTORIC_CASE_INSTANCES);
+        assertResultsPresentInDataResponse(url, caseInstance1.getId(), caseInstance2.getId(), caseInstance3.getId());
+
+        url = CmmnRestUrls.createRelativeResourceUrl(CmmnRestUrls.URL_HISTORIC_CASE_INSTANCES) + "?caseInstanceIds=" + caseInstance1.getId() + "," + caseInstance3.getId();
+        assertResultsPresentInDataResponse(url, caseInstance1.getId(), caseInstance3.getId());
+
+        url = CmmnRestUrls.createRelativeResourceUrl(CmmnRestUrls.URL_HISTORIC_CASE_INSTANCES) + "?caseInstanceIds=dummy1,dummy2";
+        assertEmptyResultsPresentInDataResponse(url);
     }
 
     private void assertVariablesPresentInPostDataResponse(String url, String queryParameters, String caseInstanceId, Map<String, Object> expectedVariables)

@@ -98,6 +98,8 @@ public class CaseInstanceCollectionResourceTest extends BaseSpringRestTestCase {
                 .name("myCaseInstanceName")
                 .businessKey("myBusinessKey")
                 .businessStatus("myBusinessStatus")
+                .callbackId("someCallbackId")
+                .callbackType("someCallbackType")
                 .start();
         identityService.setAuthenticatedUserId(null);
         String id = caseInstance.getId();
@@ -110,8 +112,29 @@ public class CaseInstanceCollectionResourceTest extends BaseSpringRestTestCase {
         url = CmmnRestUrls.createRelativeResourceUrl(CmmnRestUrls.URL_CASE_INSTANCE_COLLECTION) + "?id=" + id;
         assertResultsPresentInDataResponse(url, id);
 
+        url = CmmnRestUrls.createRelativeResourceUrl(CmmnRestUrls.URL_CASE_INSTANCE_COLLECTION) + "?ids=someId," + id;
+        assertResultsPresentInDataResponse(url, id);
+
         url = CmmnRestUrls.createRelativeResourceUrl(CmmnRestUrls.URL_CASE_INSTANCE_COLLECTION) + "?id=anotherId";
         assertResultsPresentInDataResponse(url);
+
+        // Case instance ids
+        String id2 = runtimeService.createCaseInstanceBuilder()
+                .caseDefinitionKey("oneHumanTaskCase")
+                .name("myCaseInstanceName")
+                .businessKey("myBusinessKey")
+                .businessStatus("myBusinessStatus")
+                .start().getId();
+        String id3 = runtimeService.createCaseInstanceBuilder()
+                .caseDefinitionKey("oneHumanTaskCase")
+                .name("myCaseInstanceName")
+                .businessKey("myBusinessKey")
+                .businessStatus("myBusinessStatus")
+                .start().getId();
+        url = CmmnRestUrls.createRelativeResourceUrl(CmmnRestUrls.URL_CASE_INSTANCE_COLLECTION) + "?ids=" + id + "," + id2;
+        assertResultsPresentInDataResponse(url, id, id2);
+        runtimeService.terminateCaseInstance(id2);
+        runtimeService.terminateCaseInstance(id3);
         
         // Case instance name
         url = CmmnRestUrls.createRelativeResourceUrl(CmmnRestUrls.URL_CASE_INSTANCE_COLLECTION) + "?name=myCaseInstanceName";
@@ -170,6 +193,15 @@ public class CaseInstanceCollectionResourceTest extends BaseSpringRestTestCase {
 
         url = CmmnRestUrls.createRelativeResourceUrl(CmmnRestUrls.URL_CASE_INSTANCE_COLLECTION) + "?startedAfter=" + getISODateString(futureCal.getTime());
         assertResultsPresentInDataResponse(url);
+
+        url = CmmnRestUrls.createRelativeResourceUrl(CmmnRestUrls.URL_CASE_INSTANCE_COLLECTION) + "?callbackId=someCallbackId";
+        assertResultsPresentInDataResponse(url, id);
+
+        url = CmmnRestUrls.createRelativeResourceUrl(CmmnRestUrls.URL_CASE_INSTANCE_COLLECTION) + "?callbackIds=someCallbackId,someOtherCallbackId";
+        assertResultsPresentInDataResponse(url, id);
+
+        url = CmmnRestUrls.createRelativeResourceUrl(CmmnRestUrls.URL_CASE_INSTANCE_COLLECTION) + "?callbackType=someCallbackType";
+        assertResultsPresentInDataResponse(url, id);
         
         // Case instance state
         url = CmmnRestUrls.createRelativeResourceUrl(CmmnRestUrls.URL_CASE_INSTANCE_COLLECTION) + "?state=active";
@@ -582,7 +614,7 @@ public class CaseInstanceCollectionResourceTest extends BaseSpringRestTestCase {
                         entry("longVariable", 4567890L),
                         entry("doubleVariable", 123.456),
                         entry("booleanVariable", Boolean.TRUE),
-                        entry("dateVariable", longDateFormat.parse(isoString))
+                        entry("dateVariable", getDateFromISOString(isoString))
                 );
     }
 

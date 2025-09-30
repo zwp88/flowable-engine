@@ -24,6 +24,7 @@ import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
 import org.flowable.common.engine.api.delegate.event.FlowableEventDispatcher;
 import org.flowable.common.engine.api.scope.ScopeTypes;
 import org.flowable.common.engine.impl.history.HistoryLevel;
+import org.flowable.common.engine.impl.identity.Authentication;
 import org.flowable.common.engine.impl.util.CollectionUtil;
 import org.flowable.engine.delegate.event.impl.FlowableEventBuilder;
 import org.flowable.engine.history.HistoricActivityInstance;
@@ -73,13 +74,17 @@ public class DefaultHistoryManager extends AbstractHistoryManager {
     // Process related history
 
     @Override
-    public void recordProcessInstanceEnd(ExecutionEntity processInstance, String deleteReason, String activityId, Date endTime) {
+    public void recordProcessInstanceEnd(ExecutionEntity processInstance, String state, String deleteReason, String activityId, Date endTime) {
         if (getHistoryConfigurationSettings().isHistoryEnabledForProcessInstance(processInstance)) {
             HistoricProcessInstanceEntity historicProcessInstance = getHistoricProcessInstanceEntityManager().findById(processInstance.getId());
 
             if (historicProcessInstance != null) {
                 historicProcessInstance.markEnded(deleteReason, endTime);
                 historicProcessInstance.setEndActivityId(activityId);
+                historicProcessInstance.setState(state);
+
+                String authenticatedUserId = Authentication.getAuthenticatedUserId();
+                historicProcessInstance.setEndUserId(authenticatedUserId);
 
                 // Fire event
                 FlowableEventDispatcher eventDispatcher = getEventDispatcher();
@@ -384,6 +389,11 @@ public class DefaultHistoryManager extends AbstractHistoryManager {
     // Identity link related history
     @Override
     public void recordIdentityLinkCreated(IdentityLinkEntity identityLink) {
+        recordIdentityLinkCreated(null, identityLink);
+    }
+
+    @Override
+    public void recordIdentityLinkCreated(ExecutionEntity processInstance, IdentityLinkEntity identityLink) {
         // It makes no sense storing historic counterpart for an identity link that is related
         // to a process definition only as this is never kept in history
         if (getHistoryConfigurationSettings().isHistoryEnabledForIdentityLink(identityLink)

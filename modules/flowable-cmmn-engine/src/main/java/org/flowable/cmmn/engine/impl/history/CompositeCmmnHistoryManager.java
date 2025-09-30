@@ -110,6 +110,13 @@ public class CompositeCmmnHistoryManager implements CmmnHistoryManager {
     }
 
     @Override
+    public void recordIdentityLinkCreated(CaseInstanceEntity caseInstance, IdentityLinkEntity identityLink) {
+        for (CmmnHistoryManager historyManager : historyManagers) {
+            historyManager.recordIdentityLinkCreated(caseInstance, identityLink);
+        }
+    }
+
+    @Override
     public void recordIdentityLinkDeleted(IdentityLinkEntity identityLink) {
         for (CmmnHistoryManager historyManager : historyManagers) {
             historyManager.recordIdentityLinkDeleted(identityLink);

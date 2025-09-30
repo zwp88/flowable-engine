@@ -37,6 +37,7 @@ import org.flowable.cmmn.model.PlanItemDefinition;
 import org.flowable.cmmn.model.Stage;
 import org.flowable.common.engine.api.FlowableException;
 import org.flowable.common.engine.api.delegate.Expression;
+import org.flowable.common.engine.impl.identity.Authentication;
 import org.flowable.entitylink.api.history.HistoricEntityLinkService;
 import org.flowable.entitylink.service.impl.persistence.entity.EntityLinkEntity;
 import org.flowable.entitylink.service.impl.persistence.entity.HistoricEntityLinkEntity;
@@ -84,6 +85,9 @@ public class DefaultCmmnHistoryManager implements CmmnHistoryManager {
             if (historicCaseInstanceEntity != null) {
                 historicCaseInstanceEntity.setEndTime(endTime);
                 historicCaseInstanceEntity.setState(state);
+
+                String authenticatedUserId = Authentication.getAuthenticatedUserId();
+                historicCaseInstanceEntity.setEndUserId(authenticatedUserId);
             }
         }
     }
@@ -96,6 +100,7 @@ public class DefaultCmmnHistoryManager implements CmmnHistoryManager {
             HistoricCaseInstanceEntity historicCaseInstanceEntity = historicCaseInstanceEntityManager.findById(caseInstanceEntity.getId());
             if (historicCaseInstanceEntity != null) {
                 historicCaseInstanceEntity.setEndTime(null);
+                historicCaseInstanceEntity.setEndUserId(null);
                 historicCaseInstanceEntity.setState(caseInstanceEntity.getState());
                 historicCaseInstanceEntity.setLastReactivationTime(caseInstanceEntity.getLastReactivationTime());
                 historicCaseInstanceEntity.setLastReactivationUserId(caseInstanceEntity.getLastReactivationUserId());
@@ -172,6 +177,11 @@ public class DefaultCmmnHistoryManager implements CmmnHistoryManager {
 
     @Override
     public void recordIdentityLinkCreated(IdentityLinkEntity identityLink) {
+        this.recordIdentityLinkCreated(null, identityLink);
+    }
+
+    @Override
+    public void recordIdentityLinkCreated(CaseInstanceEntity caseInstance, IdentityLinkEntity identityLink) {
         if (getHistoryConfigurationSettings().isHistoryEnabledForIdentityLink(identityLink)
                 && (identityLink.getScopeId() != null || identityLink.getTaskId() != null)) {
             HistoricIdentityLinkService historicIdentityLinkService = cmmnEngineConfiguration.getIdentityLinkServiceConfiguration().getHistoricIdentityLinkService();
@@ -487,13 +497,11 @@ public class DefaultCmmnHistoryManager implements CmmnHistoryManager {
             PlanItemDefinition planItemDefinition = planItemInstanceEntity.getPlanItem().getPlanItemDefinition();
             String includeInStageOverviewValue = null;
             if (planItemInstanceEntity.isStage()) {
-                if (planItemDefinition instanceof Stage) {
-                    Stage stage = (Stage) planItemDefinition;
+                if (planItemDefinition instanceof Stage stage) {
                     includeInStageOverviewValue = stage.getIncludeInStageOverview();
                 }
                 
-            } else if (planItemDefinition instanceof Milestone) {
-                Milestone milestone = (Milestone) planItemDefinition;
+            } else if (planItemDefinition instanceof Milestone milestone) {
                 includeInStageOverviewValue = milestone.getIncludeInStageOverview();
             }
             
